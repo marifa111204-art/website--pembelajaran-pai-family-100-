@@ -1,0 +1,937 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FAMILY 100 PAI - Sumber Hukum Islam</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome untuk Icon -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts Inter & Montserrat -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800;900&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- Canvas Confetti -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        navy: {
+                            800: '#0B192C',
+                            900: '#000814',
+                            700: '#1E3E62'
+                        },
+                        gold: {
+                            400: '#FFD700',
+                            500: '#FFC107',
+                            600: '#D4AF37',
+                            700: '#B8860B'
+                        }
+                    },
+                    fontFamily: {
+                        montserrat: ['Montserrat', 'sans-serif'],
+                        sans: ['Inter', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background: radial-gradient(circle at center, #1E3E62 0%, #0B192C 60%, #000814 100%);
+            color: #ffffff;
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            user-select: none;
+        }
+
+        .title-font {
+            font-family: 'Montserrat', sans-serif;
+            text-shadow: 0 0 15px rgba(255, 215, 0, 0.5), 2px 2px 4px rgba(0,0,0,0.8);
+        }
+
+        /* Perspective Flip Box Effect */
+        .board-card {
+            perspective: 1000px;
+        }
+        .board-card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transform-style: preserve-3d;
+        }
+        .board-card.flipped .board-card-inner {
+            transform: rotateX(180deg);
+        }
+        .board-card-front, .board-card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            display: flex;
+            align-items: center;
+            border-radius: 0.5rem;
+            box-shadow: inset 0 0 10px rgba(255,255,255,0.2), 0 4px 6px rgba(0,0,0,0.4);
+        }
+        .board-card-front {
+            background: linear-gradient(135deg, #1E3E62 0%, #0B192C 100%);
+            border: 2px solid #FFD700;
+            justify-content: center;
+        }
+        .board-card-back {
+            background: linear-gradient(135deg, #0052D4 0%, #4364F7 50%, #6FB1FC 100%);
+            border: 2px solid #FFFFFF;
+            transform: rotateX(180deg);
+            justify-content: space-between;
+            padding: 0 1.5rem;
+        }
+
+        /* Strike Overlay Effects */
+        .strike-x {
+            color: #FF1E27;
+            text-shadow: 0 0 20px #FF0000, 0 0 40px #FF0000;
+            animation: popIn 0.3s ease-out;
+        }
+
+        @keyframes popIn {
+            0% { transform: scale(0); opacity: 0; }
+            80% { transform: scale(1.2); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .gold-border {
+            border: 2px solid #FFD700;
+            box-shadow: 0 0 15px rgba(255, 215, 0, 0.3);
+        }
+
+        .active-team {
+            border-color: #FFD700 !important;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.8) !important;
+            transform: translateY(-4px);
+        }
+
+        /* Glow animation */
+        .glow-text {
+            animation: textGlow 2s infinite alternate;
+        }
+        @keyframes textGlow {
+            from { text-shadow: 0 0 10px #FFD700, 0 0 20px #FFD700; }
+            to { text-shadow: 0 0 20px #FFD700, 0 0 30px #FFD700, 0 0 40px #FFD700; }
+        }
+    </style>
+</head>
+<body class="flex flex-col min-h-screen justify-between overflow-x-hidden">
+
+    <!-- HEADER / BAR ATAS -->
+    <header class="bg-navy-900 border-b-2 border-gold-500/50 p-3 px-6 flex justify-between items-center shadow-lg">
+        <div class="flex items-center space-x-3">
+            <div class="bg-gold-500 text-navy-900 font-extrabold px-3 py-1 rounded text-xl title-font">F100</div>
+            <span class="text-xs md:text-sm text-gold-400 font-bold tracking-wider hidden sm:inline">PAI & BP - KELAS X FASE E</span>
+        </div>
+        <div class="text-center">
+            <h1 class="text-lg md:text-2xl font-black text-gold-400 title-font tracking-wide">FAMILY 100 PAI</h1>
+        </div>
+        <div class="flex items-center space-x-2">
+            <button onclick="toggleFullscreen()" class="bg-navy-700 hover:bg-slate-700 text-gold-400 p-2 rounded-lg border border-gold-500/30 transition text-sm flex items-center gap-1" title="Layar Penuh">
+                <i class="fas fa-expand"></i> <span class="hidden md:inline">Layar Penuh</span>
+            </button>
+            <button onclick="openTeacherModal()" class="bg-gold-500 hover:bg-gold-400 text-navy-900 font-bold p-2 rounded-lg transition text-sm flex items-center gap-1" title="Pengaturan Guru">
+                <i class="fas fa-cog"></i> <span class="hidden md:inline">Kontrol Guru</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- CONTENT WRAPPER -->
+    <main class="container mx-auto px-2 md:px-4 py-4 flex-grow flex flex-col justify-center">
+
+        <!-- SCREEN 1: WELCOME / MENU UTAMA -->
+        <div id="screen-welcome" class="space-y-8 text-center max-w-4xl mx-auto my-auto py-8">
+            <div class="p-8 rounded-2xl bg-navy-800/80 backdrop-blur border-2 border-gold-500 shadow-2xl space-y-6">
+                <div class="inline-block bg-gold-500/10 border border-gold-500 text-gold-400 text-sm font-semibold px-4 py-1 rounded-full uppercase tracking-widest mb-2">
+                    Bab 4: Sumber Hukum Islam
+                </div>
+                <h2 class="text-3xl md:text-5xl font-black text-white title-font leading-tight">
+                    SELAMAT DATANG DI<br><span class="text-gold-400 glow-text">FAMILY 100 PAI</span>
+                </h2>
+                <p class="text-base md:text-xl text-gray-200 max-w-2xl mx-auto">
+                    "Seberapa Paham Kamu tentang Al-Qur'an sebagai Sumber Hukum Islam Pertama & Pedoman Hidup?"
+                </p>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-xl mx-auto pt-4">
+                    <button onclick="startGame()" class="col-span-1 md:col-span-2 bg-gradient-to-r from-gold-500 to-amber-600 hover:from-gold-400 hover:to-amber-500 text-navy-900 font-black text-xl py-4 rounded-xl shadow-lg transform hover:-translate-y-1 transition duration-200 flex items-center justify-center gap-2">
+                        <i class="fas fa-play-circle text-2xl"></i> MULAI PERMAINAN
+                    </button>
+                    <button onclick="openInstructionsModal()" class="bg-navy-700 hover:bg-navy-600 border border-gold-500/50 text-white font-bold py-3 rounded-xl transition flex items-center justify-center gap-2">
+                        <i class="fas fa-book-open text-gold-400"></i> PETUNJUK
+                    </button>
+                    <button onclick="openTeacherModal()" class="bg-navy-700 hover:bg-navy-600 border border-gold-500/50 text-white font-bold py-3 rounded-xl transition flex items-center justify-center gap-2">
+                        <i class="fas fa-sliders-h text-gold-400"></i> PENGATURAN
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- SCREEN 2: GAME BOARD -->
+        <div id="screen-game" class="hidden space-y-4 max-w-6xl mx-auto w-full">
+            
+            <!-- SKOR KELOMPOK BOARD -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-4">
+                <!-- Group A -->
+                <div id="team-card-0" onclick="selectPlayingTeam(0)" class="team-card bg-navy-800/90 border-2 border-slate-600 rounded-xl p-3 text-center cursor-pointer transition-all duration-300 relative overflow-hidden">
+                    <div id="turn-indicator-0" class="hidden absolute top-0 left-0 right-0 bg-gold-500 text-navy-900 text-xs font-black py-0.5 uppercase tracking-wider">GILIRAN MAIN</div>
+                    <div class="text-xs md:text-sm text-gray-300 font-bold truncate mt-1" id="disp-team-0">KELOMPOK A</div>
+                    <div class="text-2xl md:text-4xl font-extrabold text-gold-400 my-1 title-font" id="score-team-0">0</div>
+                    <div class="flex justify-center gap-1 text-red-500 text-xs md:text-sm" id="strike-team-0">
+                        <i class="far fa-circle text-gray-600"></i>
+                        <i class="far fa-circle text-gray-600"></i>
+                        <i class="far fa-circle text-gray-600"></i>
+                    </div>
+                </div>
+                <!-- Group B -->
+                <div id="team-card-1" onclick="selectPlayingTeam(1)" class="team-card bg-navy-800/90 border-2 border-slate-600 rounded-xl p-3 text-center cursor-pointer transition-all duration-300 relative overflow-hidden">
+                    <div id="turn-indicator-1" class="hidden absolute top-0 left-0 right-0 bg-gold-500 text-navy-900 text-xs font-black py-0.5 uppercase tracking-wider">GILIRAN MAIN</div>
+                    <div class="text-xs md:text-sm text-gray-300 font-bold truncate mt-1" id="disp-team-1">KELOMPOK B</div>
+                    <div class="text-2xl md:text-4xl font-extrabold text-gold-400 my-1 title-font" id="score-team-1">0</div>
+                    <div class="flex justify-center gap-1 text-red-500 text-xs md:text-sm" id="strike-team-1">
+                        <i class="far fa-circle text-gray-600"></i>
+                        <i class="far fa-circle text-gray-600"></i>
+                        <i class="far fa-circle text-gray-600"></i>
+                    </div>
+                </div>
+                <!-- Group C -->
+                <div id="team-card-2" onclick="selectPlayingTeam(2)" class="team-card bg-navy-800/90 border-2 border-slate-600 rounded-xl p-3 text-center cursor-pointer transition-all duration-300 relative overflow-hidden">
+                    <div id="turn-indicator-2" class="hidden absolute top-0 left-0 right-0 bg-gold-500 text-navy-900 text-xs font-black py-0.5 uppercase tracking-wider">GILIRAN MAIN</div>
+                    <div class="text-xs md:text-sm text-gray-300 font-bold truncate mt-1" id="disp-team-2">KELOMPOK C</div>
+                    <div class="text-2xl md:text-4xl font-extrabold text-gold-400 my-1 title-font" id="score-team-2">0</div>
+                    <div class="flex justify-center gap-1 text-red-500 text-xs md:text-sm" id="strike-team-2">
+                        <i class="far fa-circle text-gray-600"></i>
+                        <i class="far fa-circle text-gray-600"></i>
+                        <i class="far fa-circle text-gray-600"></i>
+                    </div>
+                </div>
+                <!-- Group D -->
+                <div id="team-card-3" onclick="selectPlayingTeam(3)" class="team-card bg-navy-800/90 border-2 border-slate-600 rounded-xl p-3 text-center cursor-pointer transition-all duration-300 relative overflow-hidden">
+                    <div id="turn-indicator-3" class="hidden absolute top-0 left-0 right-0 bg-gold-500 text-navy-900 text-xs font-black py-0.5 uppercase tracking-wider">GILIRAN MAIN</div>
+                    <div class="text-xs md:text-sm text-gray-300 font-bold truncate mt-1" id="disp-team-3">KELOMPOK D</div>
+                    <div class="text-2xl md:text-4xl font-extrabold text-gold-400 my-1 title-font" id="score-team-3">0</div>
+                    <div class="flex justify-center gap-1 text-red-500 text-xs md:text-sm" id="strike-team-3">
+                        <i class="far fa-circle text-gray-600"></i>
+                        <i class="far fa-circle text-gray-600"></i>
+                        <i class="far fa-circle text-gray-600"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- STATUS & POIN BABAK INI -->
+            <div class="bg-navy-900/90 border border-gold-500/40 rounded-xl p-3 flex flex-wrap justify-between items-center gap-2">
+                <div class="flex items-center space-x-2">
+                    <span id="round-badge" class="bg-red-600 text-white font-extrabold text-xs md:text-sm px-3 py-1 rounded-full uppercase">BABAK 1</span>
+                    <span id="game-status-text" class="text-gray-300 text-xs md:text-sm font-semibold">Mode: Face Off</span>
+                </div>
+                <div class="text-center flex-1 md:flex-initial">
+                    <span class="text-xs text-gray-400 block font-bold">TOTAL POIN BABAK</span>
+                    <span id="round-points" class="text-2xl md:text-3xl font-black text-gold-400 title-font">0</span>
+                </div>
+                <div class="flex space-x-2">
+                    <button onclick="triggerStrike()" class="bg-red-600 hover:bg-red-700 text-white font-black px-3 py-1.5 rounded-lg text-sm transition flex items-center gap-1 shadow">
+                        <i class="fas fa-times text-lg"></i> STRIKE (X)
+                    </button>
+                </div>
+            </div>
+
+            <!-- SOAL PERTANYAAN -->
+            <div class="bg-gradient-to-r from-navy-800 via-navy-700 to-navy-800 border-2 border-gold-500 p-4 rounded-xl text-center shadow-lg">
+                <span class="text-xs text-gold-400 font-bold uppercase tracking-widest block mb-1">Pertanyaan Guru</span>
+                <h3 id="question-text" class="text-lg md:text-2xl font-bold text-white leading-relaxed">
+                    Sebutkan nama-nama lain dari Al-Qur'an beserta fungsinya!
+                </h3>
+            </div>
+
+            <!-- PAPAN JAWABAN FAMILY 100 -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 my-2" id="answer-board">
+                <!-- Answer Cards Generated via JS -->
+            </div>
+
+            <!-- INPUT JAWABAN & ACTION BUTTONS (GURU) -->
+            <div class="bg-navy-800/90 border border-gold-500/30 p-4 rounded-xl space-y-3">
+                <form onsubmit="handleAnswerSubmit(event)" class="flex gap-2">
+                    <input type="text" id="answer-input" placeholder="Ketik jawaban siswa di sini..." autocomplete="off" class="flex-grow bg-navy-900 border border-slate-600 text-white px-4 py-3 rounded-xl focus:outline-none focus:border-gold-500 text-sm md:text-base">
+                    <button type="submit" class="bg-gold-500 hover:bg-gold-400 text-navy-900 font-extrabold px-6 py-3 rounded-xl transition text-sm md:text-base flex items-center gap-2">
+                        <i class="fas fa-search"></i> PERIKSA
+                    </button>
+                </form>
+
+                <!-- GAME STATE CONTROLS -->
+                <div class="flex flex-wrap justify-between items-center gap-2 pt-2 border-t border-slate-700">
+                    <div class="flex flex-wrap gap-1 md:gap-2">
+                        <button onclick="setGameStatus('PLAY')" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs md:text-sm px-3 py-2 rounded-lg transition">
+                            <i class="fas fa-play"></i> PLAY
+                        </button>
+                        <button onclick="setGameStatus('PASS')" class="bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs md:text-sm px-3 py-2 rounded-lg transition">
+                            <i class="fas fa-redo"></i> PASS
+                        </button>
+                        <button onclick="setGameStatus('STEAL')" class="bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs md:text-sm px-3 py-2 rounded-lg transition">
+                            <i class="fas fa-hand-holding-usd"></i> STEAL
+                        </button>
+                    </div>
+
+                    <div class="flex gap-2">
+                        <button onclick="nextRound()" class="bg-blue-600 hover:bg-blue-500 text-white font-extrabold text-xs md:text-sm px-4 py-2 rounded-lg transition shadow flex items-center gap-1">
+                            BABAK SELANJUTNYA <i class="fas fa-arrow-right"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- SCREEN 3: HASIL AKHIR / PODIUM -->
+        <div id="screen-result" class="hidden space-y-6 max-w-4xl mx-auto my-auto py-6">
+            <div class="p-6 md:p-8 rounded-2xl bg-navy-800/90 border-2 border-gold-500 shadow-2xl text-center space-y-6">
+                <h2 class="text-2xl md:text-4xl font-black text-gold-400 title-font">
+                    SELAMAT! PERMAINAN FAMILY 100 PAI TELAH SELESAI
+                </h2>
+
+                <!-- PODIUM PERINGKAT -->
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 my-6" id="ranking-container">
+                    <!-- Rankings dynamically loaded -->
+                </div>
+
+                <!-- PESAN APRESIASI & MORAL -->
+                <div class="bg-navy-900/80 border border-gold-500/40 p-4 rounded-xl text-sm md:text-base text-gray-200 italic leading-relaxed">
+                    "Menang atau kalah bukanlah tujuan utama. Hal terpenting adalah kita memahami bahwa Al-Qur'an merupakan pedoman hidup dan sumber hukum Islam yang pertama bagi umat Islam."
+                </div>
+
+                <div class="flex flex-wrap justify-center gap-3 pt-4">
+                    <button onclick="goToReflection()" class="bg-gold-500 hover:bg-gold-400 text-navy-900 font-extrabold px-6 py-3 rounded-xl transition shadow flex items-center gap-2">
+                        <i class="fas fa-pen-nib"></i> ISI REFLEKSI PEMBELAJARAN
+                    </button>
+                    <button onclick="resetAllGame()" class="bg-navy-700 hover:bg-navy-600 text-white font-bold px-6 py-3 rounded-xl border border-slate-500 transition">
+                        <i class="fas fa-redo"></i> MAIN LAGI
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- SCREEN 4: REFLEKSI PEMBELAJARAN -->
+        <div id="screen-reflection" class="hidden max-w-3xl mx-auto my-auto py-6 w-full">
+            <div class="p-6 md:p-8 rounded-2xl bg-navy-800/95 border-2 border-gold-500 shadow-2xl space-y-6">
+                <div class="text-center border-b border-slate-700 pb-4">
+                    <h2 class="text-2xl md:text-3xl font-black text-gold-400 title-font">REFLEKSI PEMBELAJARAN PAI</h2>
+                    <p class="text-sm text-gray-300">Bab 4: Al-Qur'an sebagai Sumber Hukum Islam Pertama</p>
+                </div>
+
+                <form onsubmit="saveReflection(event)" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-bold text-gold-400 mb-2">1. Apa hal paling penting yang kamu pelajari tentang Al-Qur'an hari ini?</label>
+                        <textarea id="ref-1" rows="3" required class="w-full bg-navy-900 border border-slate-600 rounded-xl p-3 text-white text-sm focus:border-gold-500 focus:outline-none" placeholder="Tuliskan pemahamanmu..."></textarea>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-bold text-gold-400 mb-2">2. Mengapa Al-Qur'an harus menjadi pedoman utama dalam kehidupan seorang muslim?</label>
+                        <textarea id="ref-2" rows="3" required class="w-full bg-navy-900 border border-slate-600 rounded-xl p-3 text-white text-sm focus:border-gold-500 focus:outline-none" placeholder="Tuliskan alasanmu..."></textarea>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-bold text-gold-400 mb-2">3. Bagaimana cara menerapkan nilai-nilai Al-Qur'an dalam kehidupan sehari-hari?</label>
+                        <textarea id="ref-3" rows="3" required class="w-full bg-navy-900 border border-slate-600 rounded-xl p-3 text-white text-sm focus:border-gold-500 focus:outline-none" placeholder="Tuliskan komitmen/langkah nyatamu..."></textarea>
+                    </div>
+
+                    <div class="flex justify-between items-center pt-2">
+                        <button type="button" onclick="showScreen('screen-result')" class="bg-slate-700 hover:bg-slate-600 text-white font-bold px-4 py-2 rounded-xl transition text-sm">
+                            Kembali
+                        </button>
+                        <button type="submit" class="bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold px-6 py-3 rounded-xl transition text-sm flex items-center gap-2">
+                            <i class="fas fa-save"></i> SIMPAN REFLEKSI
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="bg-navy-900/80 border-t border-slate-800 p-2 text-center text-xs text-gray-400">
+        Family 100 PAI &copy; Media Pembelajaran Interaktif PAI & BP Kelas X SMA/SMK Fase E
+    </footer>
+
+    <!-- OVERLAY FULLSCREEN STRIKE (EFEK TV) -->
+    <div id="strike-overlay" class="fixed inset-0 bg-black/80 z-50 hidden flex-col items-center justify-center pointer-events-none">
+        <div id="strike-x-container" class="flex gap-4 md:gap-8">
+            <!-- X icons rendered here -->
+        </div>
+    </div>
+
+    <!-- MODAL PETUNJUK -->
+    <div id="modal-instructions" class="fixed inset-0 bg-black/80 z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-navy-800 border-2 border-gold-500 rounded-2xl max-w-2xl w-full p-6 space-y-4 max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center border-b border-slate-700 pb-2">
+                <h3 class="text-xl font-black text-gold-400 title-font">PETUNJUK PERMAINAN FAMILY 100</h3>
+                <button onclick="closeModal('modal-instructions')" class="text-gray-400 hover:text-white text-xl"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="space-y-3 text-sm text-gray-200 leading-relaxed">
+                <p><strong class="text-gold-400">1. Face Off:</strong> Perwakilan kelompok berebut menjawab pertanyaan pertama. Jawaban poin tertinggi berhak memilih <em>PLAY</em> atau <em>PASS</em>.</p>
+                <p><strong class="text-gold-400">2. Play:</strong> Kelompok menjawab bergiliran. Jawaban benar membuka papan dan menambah poin babak.</p>
+                <p><strong class="text-gold-400">3. Pass:</strong> Melempar kesempatan bermain kepada kelompok lawan.</p>
+                <p><strong class="text-gold-400">4. Three Strike (3X):</strong> Jika salah sebanyak 3 kali, giliran berpindah ke kelompok lawan untuk mencuri poin.</p>
+                <p><strong class="text-gold-400">5. Steal:</strong> Kelompok pencuri punya 1 kesempatan menjawab. Jika benar, seluruh poin babak diambil. Jika salah, poin milik kelompok utama.</p>
+            </div>
+            <div class="text-right pt-2">
+                <button onclick="closeModal('modal-instructions')" class="bg-gold-500 text-navy-900 font-bold px-5 py-2 rounded-xl">Mengerti</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL PENGATURAN GURU / KONTROL -->
+    <div id="modal-teacher" class="fixed inset-0 bg-black/80 z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-navy-800 border-2 border-gold-500 rounded-2xl max-w-3xl w-full p-6 space-y-4 max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center border-b border-slate-700 pb-2">
+                <h3 class="text-xl font-black text-gold-400 title-font">KONTROL & PENGATURAN GURU</h3>
+                <button onclick="closeModal('modal-teacher')" class="text-gray-400 hover:text-white text-xl"><i class="fas fa-times"></i></button>
+            </div>
+
+            <!-- GANTI NAMA & SKOR KELOMPOK -->
+            <div class="space-y-3">
+                <h4 class="font-bold text-white text-sm border-b border-slate-700 pb-1">Edit Nama & Skor Kelompok</h4>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3" id="teacher-teams-edit">
+                    <!-- Loaded dynamically -->
+                </div>
+            </div>
+
+            <!-- MANUAL REVEAL ANSWER -->
+            <div class="space-y-2 pt-2 border-t border-slate-700">
+                <h4 class="font-bold text-white text-sm">Buka Jawaban Manual</h4>
+                <div class="flex flex-wrap gap-2" id="teacher-manual-reveal">
+                    <!-- Buttons loaded dynamically -->
+                </div>
+            </div>
+
+            <!-- CONTROL BUTTONS -->
+            <div class="grid grid-cols-2 md:grid-cols-3 gap-2 pt-4 border-t border-slate-700">
+                <button onclick="resetStrikesCurrentTeam()" class="bg-amber-600 text-white font-bold text-xs py-2 rounded-lg">Reset Strike Tim</button>
+                <button onclick="showAllAnswersCurrentRound()" class="bg-purple-600 text-white font-bold text-xs py-2 rounded-lg">Buka Semua Jawaban</button>
+                <button onclick="resetCurrentRound()" class="bg-blue-600 text-white font-bold text-xs py-2 rounded-lg">Ulang Babak Ini</button>
+                <button onclick="resetScoresOnly()" class="bg-red-600 text-white font-bold text-xs py-2 rounded-lg">Reset Seluruh Skor</button>
+                <button onclick="resetAllGame()" class="bg-red-800 text-white font-bold text-xs py-2 rounded-lg">Reset Ulang Game</button>
+                <button onclick="finishGameEarly()" class="bg-emerald-600 text-white font-bold text-xs py-2 rounded-lg">Akhiri Game</button>
+            </div>
+
+            <div class="text-right pt-2">
+                <button onclick="closeModal('modal-teacher')" class="bg-gold-500 text-navy-900 font-bold px-5 py-2 rounded-xl">Selesai</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT GAME LOGIC -->
+    <script>
+        /* ==========================================================================
+           DATA SOAL & KUNCI JAWABAN (SESUAI MODUL PAI BAB 4)
+           ========================================================================== */
+        const gameData = [
+            {
+                round: 1,
+                title: "BABAK 1: NAMA-NAMA LAIN DAN FUNGSI AL-QUR'AN",
+                question: "Sebutkan nama-nama lain dari Al-Qur'an beserta fungsinya!",
+                answers: [
+                    { id: 1, text: "Al-Huda – Petunjuk jalan hidup", points: 40, keywords: ["huda", "petunjuk"] },
+                    { id: 2, text: "Al-Furqan – Pembeda antara hak dan batil", points: 30, keywords: ["furqan", "furqon", "pembeda"] },
+                    { id: 3, text: "Az-Zikr – Pemberi peringatan manusia", points: 20, keywords: ["zikr", "dzikr", "peringatan"] },
+                    { id: 4, text: "Al-Bayyinat – Penjelas kebenaran", points: 10, keywords: ["bayyinat", "bayinat", "penjelas"] }
+                ]
+            },
+            {
+                round: 2,
+                title: "BABAK 2: ISI KANDUNGAN AL-QUR'AN",
+                question: "Sebutkan pembagian isi kandungan hukum dalam Al-Qur'an beserta contohnya!",
+                answers: [
+                    { id: 1, text: "Hukum Amaliyah Muamalah – Jual beli, waris, dan pernikahan", points: 35, keywords: ["muamalah", "jual beli", "waris", "pernikahan"] },
+                    { id: 2, text: "Hukum I'tiqadiyah – Akidah dan keimanan kepada Allah serta rukun iman", points: 30, keywords: ["itiqadiyah", "aqidah", "akidah", "iman"] },
+                    { id: 3, text: "Hukum Amaliyah Ibadah – Salat, zakat, puasa, dan haji", points: 20, keywords: ["ibadah", "salat", "sholat", "zakat", "puasa"] },
+                    { id: 4, text: "Hukum Khuluqiyah – Akhlak terpuji dan budi pekerti", points: 15, keywords: ["khuluqiyah", "akhlak", "budi pekerti"] }
+                ]
+            },
+            {
+                round: 3,
+                title: "BABAK 3: KEDUDUKAN DAN DALIL AL-QUR'AN",
+                question: "Mengapa Al-Qur'an menjadi sumber hukum Islam yang pertama dan mutlak?",
+                answers: [
+                    { id: 1, text: "Firman langsung dari Allah Swt. (Kalamullah)", points: 45, keywords: ["firman", "kalamullah", "allah"] },
+                    { id: 2, text: "Dijamin kemurnian dan keasliannya oleh Allah (Q.S. Al-Hijr: 9)", points: 25, keywords: ["murni", "keaslian", "kemurnian", "al-hijr", "hijr"] },
+                    { id: 3, text: "Perintah peraturan tertinggi dalam Q.S. An-Nisa': 59", points: 20, keywords: ["tertinggi", "an-nisa", "nisa"] },
+                    { id: 4, text: "Merupakan mukjizat terbesar Nabi Muhammad saw.", points: 10, keywords: ["mukjizat", "muhammad", "rasul"] }
+                ]
+            },
+            {
+                round: 4,
+                title: "BABAK 4: BABAK STEAL / BONUS HOTS",
+                question: "Apa dampak negatif jika seseorang mengabaikan Al-Qur'an sebagai pedoman hukum hidup?",
+                answers: [
+                    { id: 1, text: "Hidup menjadi sesat, ragu, dan galau", points: 40, keywords: ["sesat", "ragu", "galau", "gelisah"] },
+                    { id: 2, text: "Dikategorikan sebagai orang fasik/zalim (Q.S. Al-Ma'idah: 47)", points: 30, keywords: ["fasik", "zalim", "dzalim", "al-maidah", "maidah"] },
+                    { id: 3, text: "Terjadinya kekacauan moral dan hukum sosial", points: 20, keywords: ["kacau", "kekacauan", "moral", "sosial"] },
+                    { id: 4, text: "Amal ibadah tidak diterima atau sia-sia", points: 10, keywords: ["sia-sia", "sia sia", "ditolak", "ibadah"] }
+                ]
+            }
+        ];
+
+        /* ==========================================================================
+           GAME STATE MANAGER
+           ========================================================================== */
+        let gameState = {
+            currentRound: 0, // 0 to 3
+            teams: [
+                { name: "KELOMPOK A", score: 0, strikes: 0 },
+                { name: "KELOMPOK B", score: 0, strikes: 0 },
+                { name: "KELOMPOK C", score: 0, strikes: 0 },
+                { name: "KELOMPOK D", score: 0, strikes: 0 }
+            ],
+            activeTeamIndex: 0,
+            roundPoints: 0,
+            revealedAnswers: [], // Array of boolean
+            statusText: "Face Off"
+        };
+
+        /* ==========================================================================
+           AUDIO SYSTEM (SYNTHETIC WEB AUDIO API)
+           ========================================================================== */
+        const AudioFX = {
+            ctx: null,
+            init() {
+                if (!this.ctx) {
+                    this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+                }
+            },
+            playCorrect() {
+                this.init();
+                const now = this.ctx.currentTime;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(523.25, now); // C5
+                osc.frequency.setValueAtTime(659.25, now + 0.1); // E5
+                osc.frequency.setValueAtTime(783.99, now + 0.2); // G5
+                osc.frequency.setValueAtTime(1046.50, now + 0.3); // C6
+                gain.gain.setValueAtTime(0.3, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.6);
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start(now);
+                osc.stop(now + 0.6);
+            },
+            playWrong() {
+                this.init();
+                const now = this.ctx.currentTime;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(150, now);
+                osc.frequency.linearRampToValueAtTime(80, now + 0.4);
+                gain.gain.setValueAtTime(0.4, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.5);
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start(now);
+                osc.stop(now + 0.5);
+            },
+            playBuzzer() {
+                this.init();
+                const now = this.ctx.currentTime;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'square';
+                osc.frequency.setValueAtTime(440, now);
+                gain.gain.setValueAtTime(0.2, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start(now);
+                osc.stop(now + 0.25);
+            },
+            playWin() {
+                this.init();
+                const notes = [261.63, 329.63, 392.00, 523.25, 659.25, 783.99];
+                notes.forEach((freq, idx) => {
+                    setTimeout(() => {
+                        const now = this.ctx.currentTime;
+                        const osc = this.ctx.createOscillator();
+                        const gain = this.ctx.createGain();
+                        osc.frequency.setValueAtTime(freq, now);
+                        gain.gain.setValueAtTime(0.2, now);
+                        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.4);
+                        osc.connect(gain);
+                        gain.connect(this.ctx.destination);
+                        osc.start(now);
+                        osc.stop(now + 0.4);
+                    }, idx * 100);
+                });
+            }
+        };
+
+        /* ==========================================================================
+           INITIALIZATION & LOCALSTORAGE
+           ========================================================================== */
+        window.onload = function() {
+            loadLocalStorage();
+            renderUI();
+        };
+
+        function saveLocalStorage() {
+            localStorage.setItem('f100_pai_state', JSON.stringify(gameState));
+        }
+
+        function loadLocalStorage() {
+            const saved = localStorage.getItem('f100_pai_state');
+            if (saved) {
+                try {
+                    gameState = JSON.parse(saved);
+                } catch(e) {
+                    console.error(e);
+                }
+            } else {
+                initRoundState();
+            }
+        }
+
+        function initRoundState() {
+            gameState.revealedAnswers = [false, false, false, false];
+            gameState.roundPoints = 0;
+            gameState.teams.forEach(t => t.strikes = 0);
+        }
+
+        /* ==========================================================================
+           UI SCREEN NAVIGATION
+           ========================================================================== */
+        function showScreen(screenId) {
+            ['screen-welcome', 'screen-game', 'screen-result', 'screen-reflection'].forEach(id => {
+                document.getElementById(id).classList.add('hidden');
+            });
+            document.getElementById(screenId).classList.remove('hidden');
+        }
+
+        function startGame() {
+            AudioFX.playBuzzer();
+            showScreen('screen-game');
+            renderUI();
+        }
+
+        function goToReflection() {
+            showScreen('screen-reflection');
+        }
+
+        /* ==========================================================================
+           CORE GAMEPLAY RENDER & LOGIC
+           ========================================================================== */
+        function renderUI() {
+            const currentData = gameData[gameState.currentRound];
+
+            // Render Head Status & Question
+            document.getElementById('round-badge').innerText = `BABAK ${gameState.currentRound + 1}`;
+            document.getElementById('question-text').innerText = currentData.question;
+            document.getElementById('game-status-text').innerText = `Mode: ${gameState.statusText}`;
+            document.getElementById('round-points').innerText = gameState.roundPoints;
+
+            // Render Teams
+            gameState.teams.forEach((team, idx) => {
+                document.getElementById(`disp-team-${idx}`).innerText = team.name;
+                document.getElementById(`score-team-${idx}`).innerText = team.score;
+                
+                // Active highlight
+                const card = document.getElementById(`team-card-${idx}`);
+                const indicator = document.getElementById(`turn-indicator-${idx}`);
+                if (idx === gameState.activeTeamIndex) {
+                    card.classList.add('active-team');
+                    indicator.classList.remove('hidden');
+                } else {
+                    card.classList.remove('active-team');
+                    indicator.classList.add('hidden');
+                }
+
+                // Render Strikes
+                const strikeContainer = document.getElementById(`strike-team-${idx}`);
+                strikeContainer.innerHTML = '';
+                for (let s = 1; s <= 3; s++) {
+                    if (s <= team.strikes) {
+                        strikeContainer.innerHTML += `<i class="fas fa-times text-red-500 font-black"></i>`;
+                    } else {
+                        strikeContainer.innerHTML += `<i class="far fa-circle text-slate-600"></i>`;
+                    }
+                }
+            });
+
+            // Render Answer Board
+            const board = document.getElementById('answer-board');
+            board.innerHTML = '';
+            currentData.answers.forEach((ans, idx) => {
+                const isRevealed = gameState.revealedAnswers[idx];
+                const cardHtml = `
+                    <div class="board-card h-16 w-full ${isRevealed ? 'flipped' : ''}">
+                        <div class="board-card-inner">
+                            <div class="board-card-front">
+                                <span class="text-gold-400 font-extrabold text-2xl title-font">${idx + 1}</span>
+                            </div>
+                            <div class="board-card-back">
+                                <span class="text-white font-bold text-sm md:text-base truncate pr-2">${ans.text}</span>
+                                <span class="text-gold-400 font-black text-xl title-font bg-navy-900/60 px-3 py-1 rounded border border-gold-500/40">${ans.points}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                board.innerHTML += cardHtml;
+            });
+
+            saveLocalStorage();
+        }
+
+        function selectPlayingTeam(index) {
+            gameState.activeTeamIndex = index;
+            AudioFX.playBuzzer();
+            renderUI();
+        }
+
+        function setGameStatus(status) {
+            gameState.statusText = status;
+            AudioFX.playBuzzer();
+            renderUI();
+        }
+
+        /* ==========================================================================
+           ANSWER CHECKING & MANUAL REVEAL
+           ========================================================================== */
+        function handleAnswerSubmit(event) {
+            event.preventDefault();
+            const input = document.getElementById('answer-input');
+            const val = input.value.trim().toLowerCase();
+            if (!val) return;
+
+            const currentData = gameData[gameState.currentRound];
+            let matchedIndex = -1;
+
+            // Check matching keywords
+            currentData.answers.forEach((ans, idx) => {
+                if (matchedIndex !== -1) return;
+                const isAlready = gameState.revealedAnswers[idx];
+                if (!isAlready) {
+                    const match = ans.keywords.some(kw => val.includes(kw));
+                    if (match) matchedIndex = idx;
+                }
+            });
+
+            if (matchedIndex !== -1) {
+                // Jawaban Benar
+                revealAnswer(matchedIndex);
+            } else {
+                // Jawaban Salah
+                triggerStrike();
+            }
+
+            input.value = '';
+        }
+
+        function revealAnswer(index) {
+            if (gameState.revealedAnswers[index]) return;
+
+            gameState.revealedAnswers[index] = true;
+            const points = gameData[gameState.currentRound].answers[index].points;
+            gameState.roundPoints += points;
+            
+            // Otomatis akumulasi poin ke kelompok aktif
+            gameState.teams[gameState.activeTeamIndex].score += points;
+
+            AudioFX.playCorrect();
+            renderUI();
+
+            // Cek jika seluruh jawaban terbuka
+            if (gameState.revealedAnswers.every(v => v === true)) {
+                setTimeout(() => {
+                    AudioFX.playWin();
+                    alert(`Selamat! Seluruh jawaban Babak ${gameState.currentRound + 1} telah terbuka!`);
+                }, 500);
+            }
+        }
+
+        function triggerStrike() {
+            const currentTeam = gameState.teams[gameState.activeTeamIndex];
+            if (currentTeam.strikes < 3) {
+                currentTeam.strikes += 1;
+            }
+
+            AudioFX.playWrong();
+            showStrikeOverlay(currentTeam.strikes);
+            renderUI();
+        }
+
+        function showStrikeOverlay(count) {
+            const overlay = document.getElementById('strike-overlay');
+            const container = document.getElementById('strike-x-container');
+            container.innerHTML = '';
+            for (let i = 0; i < count; i++) {
+                container.innerHTML += `<i class="fas fa-times text-6xl md:text-9xl strike-x"></i>`;
+            }
+            overlay.classList.remove('hidden');
+            overlay.classList.add('flex');
+
+            setTimeout(() => {
+                overlay.classList.add('hidden');
+                overlay.classList.remove('flex');
+            }, 1200);
+        }
+
+        /* ==========================================================================
+           ROUND CONTROL
+           ========================================================================== */
+        function nextRound() {
+            if (gameState.currentRound < gameData.length - 1) {
+                gameState.currentRound += 1;
+                initRoundState();
+                AudioFX.playBuzzer();
+                renderUI();
+            } else {
+                finishGame();
+            }
+        }
+
+        function finishGame() {
+            showScreen('screen-result');
+            AudioFX.playWin();
+            
+            // Confetti
+            confetti({
+                particleCount: 120,
+                spread: 80,
+                origin: { y: 0.6 }
+            });
+
+            // Calculate Rankings
+            const sorted = [...gameState.teams].sort((a, b) => b.score - a.score);
+            const container = document.getElementById('ranking-container');
+            container.innerHTML = '';
+
+            sorted.forEach((team, idx) => {
+                const medalColors = [
+                    'border-gold-400 bg-gold-500/20 text-gold-400',
+                    'border-slate-300 bg-slate-300/20 text-slate-300',
+                    'border-amber-700 bg-amber-700/20 text-amber-600',
+                    'border-slate-600 bg-slate-800/40 text-slate-400'
+                ];
+                const card = `
+                    <div class="border-2 ${medalColors[idx]} p-4 rounded-xl text-center space-y-2">
+                        <div class="text-2xl font-black title-font">JUARA ${idx + 1}</div>
+                        <div class="text-lg font-bold text-white">${team.name}</div>
+                        <div class="text-3xl font-extrabold text-gold-400 title-font">${team.score} PTS</div>
+                    </div>
+                `;
+                container.innerHTML += card;
+            });
+        }
+
+        /* ==========================================================================
+           TEACHER MODAL & CONTROLS
+           ========================================================================== */
+        function openTeacherModal() {
+            // Render edit team inputs
+            const teamEditContainer = document.getElementById('teacher-teams-edit');
+            teamEditContainer.innerHTML = '';
+            gameState.teams.forEach((t, i) => {
+                teamEditContainer.innerHTML += `
+                    <div class="bg-navy-900 p-2 rounded border border-slate-700 flex gap-2 items-center">
+                        <input type="text" value="${t.name}" onchange="updateTeamName(${i}, this.value)" class="bg-navy-800 border border-slate-600 text-white text-xs px-2 py-1 rounded w-1/2">
+                        <input type="number" value="${t.score}" onchange="updateTeamScore(${i}, this.value)" class="bg-navy-800 border border-slate-600 text-white text-xs px-2 py-1 rounded w-1/2">
+                    </div>
+                `;
+            });
+
+            // Render manual answer reveal buttons
+            const manualContainer = document.getElementById('teacher-manual-reveal');
+            manualContainer.innerHTML = '';
+            gameData[gameState.currentRound].answers.forEach((ans, i) => {
+                const isRev = gameState.revealedAnswers[i];
+                manualContainer.innerHTML += `
+                    <button onclick="revealAnswer(${i})" class="${isRev ? 'bg-slate-700 text-gray-500 cursor-not-allowed' : 'bg-gold-500 text-navy-900'} font-bold text-xs px-3 py-1.5 rounded transition">
+                        Buka Jawaban #${i + 1} (${ans.points} Pts)
+                    </button>
+                `;
+            });
+
+            document.getElementById('modal-teacher').classList.remove('hidden');
+        }
+
+        function updateTeamName(index, val) {
+            gameState.teams[index].name = val;
+            renderUI();
+        }
+
+        function updateTeamScore(index, val) {
+            gameState.teams[index].score = parseInt(val) || 0;
+            renderUI();
+        }
+
+        function resetStrikesCurrentTeam() {
+            gameState.teams[gameState.activeTeamIndex].strikes = 0;
+            renderUI();
+        }
+
+        function showAllAnswersCurrentRound() {
+            gameData[gameState.currentRound].answers.forEach((_, idx) => revealAnswer(idx));
+        }
+
+        function resetCurrentRound() {
+            initRoundState();
+            renderUI();
+        }
+
+        function resetScoresOnly() {
+            gameState.teams.forEach(t => t.score = 0);
+            renderUI();
+        }
+
+        function resetAllGame() {
+            gameState.currentRound = 0;
+            gameState.teams.forEach(t => {
+                t.score = 0;
+                t.strikes = 0;
+            });
+            initRoundState();
+            showScreen('screen-welcome');
+            renderUI();
+        }
+
+        function finishGameEarly() {
+            closeModal('modal-teacher');
+            finishGame();
+        }
+
+        /* ==========================================================================
+           HELPERS & UTILS
+           ========================================================================== */
+        function openInstructionsModal() {
+            document.getElementById('modal-instructions').classList.remove('hidden');
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.add('hidden');
+        }
+
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(() => {});
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                }
+            }
+        }
+
+        function saveReflection(event) {
+            event.preventDefault();
+            alert("Terima kasih! Jawaban refleksi pembelajaran berhasil disimpan.");
+            showScreen('screen-welcome');
+        }
+    </script>
+</body>
+</html>
